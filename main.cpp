@@ -4,8 +4,6 @@
 
 int main()
 {
-	printf("Hello meme!\n");
-
 	view_init();
 	while (view_update());
 

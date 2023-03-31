@@ -3,5 +3,6 @@
 
 int view_init();
 int view_update();
+void view_end();
 
 #endif

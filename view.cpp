@@ -1,13 +1,16 @@
-#include <SFML/Graphics.hpp>
 #include "view.h"
+#include <SFML/Graphics.hpp>
+#include <stdio.h>
+
+#include "level.h"
 
 static sf::Uint32 style = sf::Style::Titlebar;
-static sf::RenderWindow window(sf::VideoMode(1600, 900), "SFML works!", style);
-static sf::CircleShape shape(450.f);
+static sf::RenderWindow window(sf::VideoMode(500, 500), "Raycasting", style);
 
 int view_init()
 {
-	shape.setFillColor(sf::Color::Green);
+	printf("view_init()\n");
+	level_init(&window);
 	return 1;
 }
 
@@ -24,9 +27,15 @@ int view_update()
 	}
 
 	window.clear();
-	window.draw(shape);
+	if (!level_update()) return 0;
 	window.display();
 
 	return 1;
 }
 
+void view_end()
+{
+	printf("view_end()\n");
+	level_end();
+	return;
+}
