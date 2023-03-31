@@ -4,6 +4,8 @@
 
 #include "level.h"
 
+static int handleKeyCode(sf::Keyboard::Key key);
+
 static sf::Uint32 style = sf::Style::Titlebar;
 static sf::RenderWindow window(sf::VideoMode(500, 500), "Raycasting", style);
 
@@ -20,9 +22,14 @@ int view_update()
 
 	sf::Event event;
 	while (window.pollEvent(event)) {
-		if (event.type == sf::Event::Closed) {
-			window.close();
-			return 0;
+		switch (event.type) {
+			case sf::Event::Closed:
+				return 0;
+			case sf::Event::KeyPressed:
+				if (handleKeyCode(event.key.code)) continue;
+				return 0;
+			default:
+				continue;
 		}
 	}
 
@@ -37,5 +44,17 @@ void view_end()
 {
 	printf("view_end()\n");
 	level_end();
-	return;
+
+	window.close();
+}
+
+static int handleKeyCode(sf::Keyboard::Key key)
+{
+	switch (key) {
+		case sf::Keyboard::Escape:
+		case sf::Keyboard::Q:
+			return 0;
+		default:
+			return 1;
+	}
 }
