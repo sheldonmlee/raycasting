@@ -11,7 +11,7 @@ LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
 .PHONY: all run clean
 
-all: $(TARGET) $(OBJD)
+all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CC) $^ -o $(TARGET) $(LDFLAGS) $(CCFLAGS)
@@ -23,6 +23,6 @@ $(OBJS): $(OBJD)/%.o: %.cpp
 clean:
 	rm -r $(TARGET) $(OBJD)
 
-run:
+run: main
 	./$(TARGET)
 
