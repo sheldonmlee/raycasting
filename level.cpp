@@ -41,23 +41,22 @@ void level_end()
 static void drawGrid()
 {
 	const sf::Vector2u windowSize = window->getSize();
-	unsigned int padding = 5;
 	unsigned int stepX = windowSize.x/WIDTH;
 	unsigned int stepY = windowSize.y/HEIGHT;
-
-	drawGridLine(stepX, true);
-	drawGridLine(stepY, false);
 
 	for (unsigned int x = 0; x < WIDTH; x++) {
 		for (unsigned int y = 0; y < HEIGHT; y++) {
 			if (!level[y * HEIGHT + x]) continue;
 
-			sf::RectangleShape rectangle(sf::Vector2f(stepY - padding*2, stepY - padding*2));
-			rectangle.setPosition(x * stepX + padding, y * stepY + padding);
+			sf::RectangleShape rectangle(sf::Vector2f(stepY, stepY));
+			rectangle.setPosition(x * stepX, y * stepY);
 
 			window->draw(rectangle);
 		}
 	}
+
+	drawGridLine(stepX, true);
+	drawGridLine(stepY, false);
 }
 
 static void drawGridLine(unsigned int step, bool isHorizontal)
@@ -92,5 +91,7 @@ static sf::Vertex getGridLineVertex(unsigned int offset, unsigned int maxDimensi
 		end   = sf::Vertex(sf::Vector2f(maxDimension, offset));
 	}
 
+	start.color = sf::Color(100, 100, 100);
+	end.color = sf::Color(100, 100, 100);
 	return isStart? start : end;
 }
