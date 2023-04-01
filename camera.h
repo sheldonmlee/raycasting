@@ -1,8 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics.hpp>
 
 typedef struct
 {
@@ -12,6 +11,6 @@ typedef struct
 	float fov;
 } Camera;
 
-void camera_update(Camera* camera, sf::RenderWindow* window);
+void camera_update(Camera* camera, sf::RenderWindow* window, float t);
 
 #endif

@@ -9,6 +9,7 @@ static int handleKeyCode(sf::Keyboard::Key key);
 
 static sf::Uint32 style = sf::Style::Titlebar;
 static sf::RenderWindow window(sf::VideoMode(500, 500), "Raycasting", style);
+static sf::Clock timer;
 
 static Camera camera = { sf::Vector2f(300.f, 250.f), 0.f, 1.f, 70.f };
 
@@ -37,8 +38,10 @@ int view_update()
 	}
 
 	window.clear();
+	
+	sf::Time t = timer.restart();
 	if (!level_update()) return 0;
-	camera_update(&camera, &window);
+	camera_update(&camera, &window, t.asSeconds());
 	window.display();
 
 	return 1;
