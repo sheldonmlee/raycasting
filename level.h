@@ -6,5 +6,6 @@
 int level_init(sf::RenderWindow* renderWindow);
 int level_update();
 void level_end();
+float level_rayCastDistance(sf::Vector2f point, float direction);
 
 #endif

@@ -1,13 +1,16 @@
 #include "camera.h"
+
 #include <cmath>
+#include "level.h"
 
 #define PI 3.14159265
 #define DEG_RAD PI/180.f
 #define ROTATION_SPEED 180
 #define TRANSLATIONAL_SPEED 100.f
 
-static void drawLine(sf::RenderWindow* window, sf::Vector2f pos, float angle, float length, sf::Color color);
 static void draw(Camera* camera, sf::RenderWindow* window);
+static void drawRays(Camera* camera, sf::RenderWindow* window);
+static void drawLine(sf::RenderWindow* window, sf::Vector2f pos, float angle, float length, sf::Color color);
 static void move(Camera* camera, float t);
 
 void camera_update(Camera* camera, sf::RenderWindow* window, float t)
@@ -26,8 +29,22 @@ static void draw(Camera* camera, sf::RenderWindow* window)
 	circle.setOrigin(circleRadius, circleRadius);
 	circle.setFillColor(sf::Color::Green);
 
+	drawRays(camera, window);
 	drawLine(window, camera->pos, camera->direction, 100, sf::Color::Red);
 	window->draw(circle);
+}
+
+static void drawRays(Camera* camera, sf::RenderWindow* window)
+{
+	float halfFOV = camera->fov/2.f;
+	float rayDirection = camera->direction - halfFOV;
+	float rayDirectionStep = camera->fov / (float)camera->resolution;
+
+	for (unsigned int i = 0; i < camera->resolution; i++) {
+		float distance = level_rayCastDistance(camera->pos, rayDirection);
+		drawLine(window, camera->pos, rayDirection, distance, sf::Color::Blue);
+		rayDirection += rayDirectionStep;
+	}
 }
 
 static void drawLine(sf::RenderWindow* window, sf::Vector2f pos, float angle, float length, sf::Color color)

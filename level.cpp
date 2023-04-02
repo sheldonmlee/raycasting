@@ -12,9 +12,9 @@ static sf::RenderWindow* window = nullptr;
 
 static unsigned int level[WIDTH * HEIGHT] = {
 	1, 1, 1, 1, 1,
-	0, 0, 0, 0, 0,
+	1, 0, 0, 0, 0,
 	1, 0, 1, 0, 1,
-	0, 0, 0, 0, 0,
+	1, 0, 0, 0, 0,
 	1, 0, 1, 0, 1,
 };
 
@@ -36,6 +36,11 @@ void level_end()
 {
 	printf("level_end()\n");
 	return;
+}
+
+float level_rayCastDistance(sf::Vector2f point, float direction)
+{
+	return 100.f;
 }
 
 static void drawGrid()

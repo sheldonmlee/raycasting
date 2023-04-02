@@ -7,7 +7,7 @@ typedef struct
 {
 	sf::Vector2f pos;
 	float direction;
-	float resolution;
+	unsigned int resolution;
 	float fov;
 } Camera;
 
