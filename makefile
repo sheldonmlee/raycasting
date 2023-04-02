@@ -9,9 +9,9 @@ OBJS := $(SRCS:%.cpp=$(OBJD)/%.o)
 CCFLAGS = -Wall
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
-.PHONY: all run clean
+.PHONY: all run clean tags 
 
-all: $(TARGET)
+all: $(TARGET) tags
 
 $(TARGET): $(OBJS)
 	$(CC) $^ -o $(TARGET) $(LDFLAGS) $(CCFLAGS)
@@ -23,6 +23,8 @@ $(OBJS): $(OBJD)/%.o: %.cpp
 clean:
 	rm -r $(TARGET) $(OBJD)
 
-run: main
+run: $(TARGET) tags
 	./$(TARGET)
 
+tags:
+	ctags -R
