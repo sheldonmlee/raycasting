@@ -1,11 +1,9 @@
 #include "camera.h"
 
-#include <cmath>
+#include "maths.h"
 #include "level.h"
 
-#define PI 3.14159265
-#define DEG_RAD PI/180.f
-#define ROTATION_SPEED 180
+#define ROTATION_SPEED PI
 #define TRANSLATIONAL_SPEED 100.f
 
 static void draw(Camera* camera, sf::RenderWindow* window);
@@ -36,14 +34,24 @@ static void draw(Camera* camera, sf::RenderWindow* window)
 
 static void drawRays(Camera* camera, sf::RenderWindow* window)
 {
-	float halfFOV = camera->fov/2.f;
-	float rayDirection = camera->direction - halfFOV;
+	float rayDirection = 0;
 	float rayDirectionStep = camera->fov / (float)camera->resolution;
+	bool isOddResolution = (camera->resolution % 2);
+	float rayDirectionOffset = isOddResolution? 0 : rayDirectionStep / 2.f;
 
 	for (unsigned int i = 0; i < camera->resolution; i++) {
+		if (isOddResolution && i == 0) 
+			rayDirection = camera->direction;
+		else if (i % 2) 
+			rayDirection = camera->direction - rayDirectionOffset;
+		else 
+			rayDirection = camera->direction + rayDirectionOffset;
+
 		float distance = level_rayCastDistance(camera->pos, rayDirection);
+
 		drawLine(window, camera->pos, rayDirection, distance, sf::Color::Blue);
-		rayDirection += rayDirectionStep;
+
+		if ((i + isOddResolution) % 2) rayDirectionOffset += rayDirectionStep;
 	}
 }
 
@@ -51,7 +59,7 @@ static void drawLine(sf::RenderWindow* window, sf::Vector2f pos, float angle, fl
 {
 	if (!window) return;
 
-	sf::Vector2f endOffset(length * cos(angle * DEG_RAD), length * sin(angle * DEG_RAD));
+	sf::Vector2f endOffset(length * cos(angle), length * sin(angle));
 	sf::Vertex start(pos);
 	sf::Vertex end(pos + endOffset);
 
@@ -77,7 +85,7 @@ static void move(Camera* camera, float t)
 		rotation -=1;
 
 	float magnitude = forward * t * TRANSLATIONAL_SPEED;
-	sf::Vector2f offset(magnitude * cos(camera->direction * DEG_RAD), magnitude *sin(camera->direction * DEG_RAD));
+	sf::Vector2f offset(magnitude * cos(camera->direction), magnitude *sin(camera->direction));
 
 	camera->pos += offset;
 	camera->direction += rotation * t * ROTATION_SPEED;
