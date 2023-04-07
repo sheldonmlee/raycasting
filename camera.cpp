@@ -49,7 +49,7 @@ static void drawRays(Camera* camera, sf::RenderWindow* window)
 
 		float distance = level_rayCastDistance(camera->pos, rayDirection);
 
-		drawLine(window, camera->pos, rayDirection, distance, sf::Color::Blue);
+		drawLine(window, camera->pos, rayDirection, distance, sf::Color(150, 150, 100));
 
 		if ((i + isOddResolution) % 2) rayDirectionOffset += rayDirectionStep;
 	}

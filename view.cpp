@@ -12,7 +12,7 @@ static sf::Uint32 style = sf::Style::Titlebar;
 static sf::RenderWindow window(sf::VideoMode(500, 500), "Raycasting", style);
 static sf::Clock timer;
 
-static Camera camera = { sf::Vector2f(300.f, 250.f), 0.f, 50, 2.0f*PI };
+static Camera camera = { sf::Vector2f(300.f, 250.f), 0.f, 100, 2.0f*PI };
 
 int view_init()
 {
