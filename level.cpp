@@ -45,6 +45,12 @@ float level_rayCastDistance(sf::Vector2f point, float direction)
 	return castRay(point, direction);
 }
 
+void level_getDimensions(unsigned int* width, unsigned int* height)
+{
+	*width = WIDTH;
+	*height = HEIGHT;
+}
+
 static void drawGrid(sf::RenderTarget* renderTarget, unsigned int tileSize)
 {
 	for (unsigned int x = 0; x < WIDTH; x++) {

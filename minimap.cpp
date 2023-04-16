@@ -10,19 +10,29 @@ static void drawLine(sf::RenderTarget* renderTarget, sf::Vector2f pos, float ang
 
 static sf::RenderTexture minimap;
 
+static bool init = false;
 static unsigned int minimapSize;
+static float drawScale;
 
 int minimap_init(unsigned int size)
 {
 	printf("minimap_init()\n");
-	minimapSize = size;
 	if (!minimap.create(size, size)) return 0;
 	level_init();
+
+	unsigned int width, height;
+	level_getDimensions(&width, &height);
+
+	minimapSize = size;
+	drawScale = (float)size/(float)width;
+
+	init = true;
 	return 1;
 }
 
 void minimap_update(sf::RenderTarget* renderTarget, Camera* camera)
 {
+	if (!init) return;
 	if (!renderTarget || !camera) return;
 	minimap.clear();
 	level_update(&minimap, minimapSize);
@@ -35,7 +45,7 @@ void minimap_update(sf::RenderTarget* renderTarget, Camera* camera)
 
 static void drawCamera(sf::RenderTarget* renderTarget, Camera* camera)
 {
-	const sf::Vector2f scaledPos = camera->pos * camera->drawScale;
+	const sf::Vector2f scaledPos = camera->pos * drawScale;
 	const float circleRadius = 0.02f * minimapSize;
 	sf::CircleShape circle(circleRadius);
 	circle.setPosition(scaledPos);
@@ -49,7 +59,7 @@ static void drawCamera(sf::RenderTarget* renderTarget, Camera* camera)
 
 static void drawRays(sf::RenderTarget* renderTarget, Camera* camera)
 {
-	const sf::Vector2f scaledPos = camera->pos * camera->drawScale;
+	const sf::Vector2f scaledPos = camera->pos * drawScale;
 
 	float rayDirection = 0;
 	float rayDirectionStep = camera->fov / (float)camera->resolution;
@@ -64,7 +74,7 @@ static void drawRays(sf::RenderTarget* renderTarget, Camera* camera)
 		else 
 			rayDirection = camera->direction + rayDirectionOffset;
 
-		float distance = level_rayCastDistance(camera->pos, rayDirection) * camera->drawScale;
+		float distance = level_rayCastDistance(camera->pos, rayDirection) * drawScale;
 
 		drawLine(renderTarget, scaledPos, rayDirection, distance, sf::Color(150, 150, 100));
 

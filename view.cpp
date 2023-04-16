@@ -6,13 +6,13 @@
 #include "camera.h"
 #include "minimap.h"
 
-#define MINIMAP_SIZE 300
+#define MINIMAP_SIZE 250
 #define HALF_MINIMAP_SIZE MINIMAP_SIZE/2.f
 #define DRAW_SCALE MINIMAP_SIZE/5.f
 
 static int handleKeyCode(sf::Keyboard::Key key);
 
-static Camera camera = { sf::Vector2f(5.f/2.f, 5.f/2.f), 0.f, 300, 0.5f*PI, DRAW_SCALE };
+static Camera camera = { sf::Vector2f(5.f/2.f, 5.f/2.f), 0.f, 300, 0.5f*PI };
 
 static sf::Uint32 style = sf::Style::Titlebar;
 static sf::RenderWindow window(sf::VideoMode(MINIMAP_SIZE + camera.resolution, MINIMAP_SIZE), "Raycasting", style);

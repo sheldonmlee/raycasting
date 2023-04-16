@@ -9,7 +9,6 @@ typedef struct
 	float direction;
 	unsigned int resolution;
 	float fov;
-	float drawScale;
 } Camera;
 
 void camera_update(Camera* camera, float t);
