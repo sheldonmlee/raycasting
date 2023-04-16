@@ -6,35 +6,32 @@
 #define WIDTH  5
 #define HEIGHT 5
 
-static void drawGrid();
-static void drawGridLine(unsigned int step, bool isHorizontal);
-static sf::Vertex getGridLineVertex(unsigned int n, unsigned int maxDimension, bool isStart, bool isHorizontal);
+static void drawGrid(sf::RenderTarget* renderTarget, unsigned int tileSize);
+static void drawGridLine(sf::RenderTarget* renderTarget, float step, bool isHorizontal);
+static sf::Vertex getGridLineVertex(float n, float maxDimension, bool isStart, bool isHorizontal);
 
 static float castRay(sf::Vector2f point, float direction);
 static void getGridIndex(sf::Vector2f point, int* x, int* y);
 
-static sf::RenderWindow* window = nullptr;
-
 static unsigned int level[WIDTH * HEIGHT] = {
-	1, 1, 1, 1, 1,
+	0, 0, 1, 1, 1,
 	0, 0, 0, 0, 0,
-	0, 0, 1, 0, 1,
-	0, 0, 0, 0, 0,
-	0, 0, 1, 0, 1,
+	1, 0, 1, 0, 1,
+	1, 0, 0, 0, 1,
+	1, 0, 1, 1, 1,
 };
 
-int level_init(sf::RenderWindow* renderWindow)
+int level_init()
 {
 	printf("level_init()\n");
-	window = renderWindow;
 	return 1;
 }
 
-int level_update()
+void level_update(sf::RenderTarget* renderTarget, unsigned int drawSize)
 {
-	if (!window) return 0;
-	drawGrid();
-	return 1;
+	if (!renderTarget) return;
+
+	drawGrid(renderTarget, drawSize/WIDTH);
 }
 
 void level_end()
@@ -48,46 +45,41 @@ float level_rayCastDistance(sf::Vector2f point, float direction)
 	return castRay(point, direction);
 }
 
-static void drawGrid()
+static void drawGrid(sf::RenderTarget* renderTarget, unsigned int tileSize)
 {
-	const sf::Vector2u windowSize = window->getSize();
-	const unsigned int stepX = windowSize.x/WIDTH;
-	const unsigned int stepY = windowSize.y/HEIGHT;
-
 	for (unsigned int x = 0; x < WIDTH; x++) {
 		for (unsigned int y = 0; y < HEIGHT; y++) {
 			if (!level[y * HEIGHT + x]) continue;
 
-			sf::RectangleShape rectangle(sf::Vector2f(stepY, stepY));
-			rectangle.setPosition(x * stepX, y * stepY);
-
-			window->draw(rectangle);
+			sf::RectangleShape rectangle(sf::Vector2f(tileSize, tileSize));
+			rectangle.setPosition((float)x * tileSize, (float)y * tileSize);
+			renderTarget->draw(rectangle);
 		}
 	}
 
-	drawGridLine(stepX, true);
-	drawGridLine(stepY, false);
+	drawGridLine(renderTarget, tileSize, true);
+	drawGridLine(renderTarget, tileSize, false);
 }
 
-static void drawGridLine(unsigned int step, bool isHorizontal)
+static void drawGridLine(sf::RenderTarget* renderTarget, float step, bool isHorizontal)
 {
 	unsigned int lines = isHorizontal? WIDTH : HEIGHT;
 
 	for (unsigned int n = 0; n < lines; n++) {
 		if (n == 0) continue;
-		unsigned int offset = n * step;
-		unsigned int maxDimension = lines * step;
+		float offset = (float)n * step;
+		float maxDimension = (float)lines * step;
 		sf::Vertex line[] = 
 		{
 			getGridLineVertex(offset, maxDimension, true, isHorizontal),
 			getGridLineVertex(offset, maxDimension, false, isHorizontal)
 		};
 
-		window->draw(line, 2, sf::Lines);
+		renderTarget->draw(line, 2, sf::Lines);
 	}
 }
 
-static sf::Vertex getGridLineVertex(unsigned int offset, unsigned int maxDimension, bool isStart, bool isHorizontal)
+static sf::Vertex getGridLineVertex(float offset, float maxDimension, bool isStart, bool isHorizontal)
 {
 	sf::Vertex start; 
 	sf::Vertex end; 
@@ -101,17 +93,14 @@ static sf::Vertex getGridLineVertex(unsigned int offset, unsigned int maxDimensi
 		end   = sf::Vertex(sf::Vector2f(maxDimension, offset));
 	}
 
-	start.color = sf::Color(100, 100, 100);
-	end.color = sf::Color(100, 100, 100);
+	sf::Color color(100, 100, 100);
+	start.color = color;
+	end.color   = color;
 	return isStart? start : end;
 }
 
 static float castRay(sf::Vector2f point, float direction)
 {
-	const sf::Vector2u windowSize = window->getSize();
-	const unsigned int tileWidth = windowSize.x/WIDTH;
-	const unsigned int tileHeight = windowSize.y/HEIGHT;
-
 	int indexX, indexY;
 	getGridIndex(point, &indexX, &indexY);
 
@@ -135,13 +124,13 @@ static float castRay(sf::Vector2f point, float direction)
 	bool goingDown = direction < PI;
 	int signDown = goingDown? 1 : -1;
 
-	float horizontalDy = (float)((indexY + goingDown) * tileHeight) - point.y;
+	float horizontalDy = (float)(indexY + goingDown) - point.y;
 	float horizontalDx = horizontalDy/tan(direction);
 
-	float horizontalStepX = (float)(signDown * (tileWidth/tan(direction)));
-	float horizontalStepY = (float)(signDown * (int)tileHeight);
+	float horizontalStepX = ((float)signDown * (1.f/tan(direction)));
+	float horizontalStepY = (float)signDown;
 	float horizontalProjectedX = point.x + horizontalDx;
-	float horizontalProjectedY = (indexY + goingDown) * tileHeight;
+	float horizontalProjectedY = indexY + goingDown;
 
 	float horizontalDistCoeff = sin(direction);
 	float horizontalRayDist = std::abs(horizontalDy/horizontalDistCoeff);
@@ -150,18 +139,19 @@ static float castRay(sf::Vector2f point, float direction)
 	bool goingRight = direction < PI;
 	int signRight = goingRight? 1 : -1;
 
-	float verticalDx = (float)((indexX + goingRight) * tileWidth) - point.x;
+	float verticalDx = (float)(indexX + goingRight) - point.x;
 	float verticalDy = -verticalDx/tan(direction); // y axis needs to be flipped 
 
-	float verticalStepY = -(float)(signRight * (tileHeight/tan(direction))); // y axis also flipped here
-	float verticalStepX = (float)(signRight * (int)tileHeight);
+	float verticalStepY = -((float)signRight * (1.f/tan(direction))); // y axis also flipped here
+	float verticalStepX = (float)signRight;
 	float verticalProjectedY = point.y + verticalDy;
-	float verticalProjectedX = (indexX + goingRight) * tileWidth;
+	float verticalProjectedX = indexX + goingRight;
 
 	float verticalDistCoeff = sin(direction);
 	float verticalRayDist = std::abs(verticalDx/verticalDistCoeff);
 
-	while (true) {
+	unsigned int tries = WIDTH * HEIGHT;
+	while (tries--) {
 		int indexX0, indexY0; // store grid indices for horizontal intersections
 		int indexX1, indexY1; // store grid indices for vertical intersections
 		getGridIndex(sf::Vector2f(horizontalProjectedX, horizontalProjectedY), &indexX0, &indexY0);
@@ -201,10 +191,8 @@ static float castRay(sf::Vector2f point, float direction)
 
 static void getGridIndex(sf::Vector2f point, int* x, int* y)
 {
-	const sf::Vector2u windowSize = window->getSize();
-
-	*x = point.x / (int)(windowSize.x / WIDTH);
-	*y = point.y / (int)(windowSize.y / HEIGHT);
+	*x = point.x;
+	*y = point.y;
 
 	if (*x < 0 || WIDTH <= *x) *x = -1;
 	if (*y < 0 || HEIGHT <= *y) *y = -1;

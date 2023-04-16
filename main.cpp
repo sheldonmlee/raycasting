@@ -4,7 +4,7 @@
 
 int main()
 {
-	view_init();
+	if (!view_init()) return 1;
 	while (view_update());
 	view_end();
 

@@ -2,22 +2,26 @@
 #include <SFML/Graphics.hpp>
 #include <stdio.h>
 
-#include "level.h"
-#include "camera.h"
 #include "maths.h"
+#include "camera.h"
+#include "minimap.h"
+
+#define MINIMAP_SIZE 300
+#define HALF_MINIMAP_SIZE MINIMAP_SIZE/2.f
+#define DRAW_SCALE MINIMAP_SIZE/5.f
 
 static int handleKeyCode(sf::Keyboard::Key key);
 
-static sf::Uint32 style = sf::Style::Titlebar;
-static sf::RenderWindow window(sf::VideoMode(500, 500), "Raycasting", style);
-static sf::Clock timer;
+static Camera camera = { sf::Vector2f(5.f/2.f, 5.f/2.f), 0.f, 300, 0.5f*PI, DRAW_SCALE };
 
-static Camera camera = { sf::Vector2f(300.f, 250.f), 0.f, 100, 2.0f*PI };
+static sf::Uint32 style = sf::Style::Titlebar;
+static sf::RenderWindow window(sf::VideoMode(MINIMAP_SIZE + camera.resolution, MINIMAP_SIZE), "Raycasting", style);
+static sf::Clock timer;
 
 int view_init()
 {
 	printf("view_init()\n");
-	level_init(&window);
+	minimap_init(MINIMAP_SIZE);
 	return 1;
 }
 
@@ -38,11 +42,12 @@ int view_update()
 		}
 	}
 
-	window.clear();
-	
 	sf::Time t = timer.restart();
-	if (!level_update()) return 0;
-	camera_update(&camera, &window, t.asSeconds());
+
+	camera_update(&camera, t.asSeconds());
+
+	window.clear();
+	minimap_update(&window, &camera);
 	window.display();
 
 	return 1;
@@ -51,7 +56,6 @@ int view_update()
 void view_end()
 {
 	printf("view_end()\n");
-	level_end();
 
 	window.close();
 }
