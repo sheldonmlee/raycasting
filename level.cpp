@@ -1,14 +1,9 @@
 #include "level.h"	
-#include <stdio.h>
 
 #include "maths.h"
 
 #define WIDTH  5
 #define HEIGHT 5
-
-static void drawGrid(sf::RenderTarget* renderTarget, unsigned int tileSize);
-static void drawGridLine(sf::RenderTarget* renderTarget, float step, bool isHorizontal);
-static sf::Vertex getGridLineVertex(float n, float maxDimension, bool isStart, bool isHorizontal);
 
 static float castRay(sf::Vector2f point, float direction);
 static void getGridIndex(sf::Vector2f point, int* x, int* y);
@@ -23,20 +18,16 @@ static unsigned int level[WIDTH * HEIGHT] = {
 
 int level_init()
 {
-	printf("level_init()\n");
 	return 1;
 }
 
 void level_update(sf::RenderTarget* renderTarget, unsigned int drawSize)
 {
 	if (!renderTarget) return;
-
-	drawGrid(renderTarget, drawSize/WIDTH);
 }
 
 void level_end()
 {
-	printf("level_end()\n");
 	return;
 }
 
@@ -51,58 +42,12 @@ void level_getDimensions(unsigned int* width, unsigned int* height)
 	*height = HEIGHT;
 }
 
-static void drawGrid(sf::RenderTarget* renderTarget, unsigned int tileSize)
+unsigned int level_getGridValue(unsigned int x, unsigned int y)
 {
-	for (unsigned int x = 0; x < WIDTH; x++) {
-		for (unsigned int y = 0; y < HEIGHT; y++) {
-			if (!level[y * HEIGHT + x]) continue;
+	if (x < 0 || WIDTH <= x) return 0;
+	if (y < 0 || HEIGHT <= y) return 0;
 
-			sf::RectangleShape rectangle(sf::Vector2f(tileSize, tileSize));
-			rectangle.setPosition((float)x * tileSize, (float)y * tileSize);
-			renderTarget->draw(rectangle);
-		}
-	}
-
-	drawGridLine(renderTarget, tileSize, true);
-	drawGridLine(renderTarget, tileSize, false);
-}
-
-static void drawGridLine(sf::RenderTarget* renderTarget, float step, bool isHorizontal)
-{
-	unsigned int lines = isHorizontal? WIDTH : HEIGHT;
-
-	for (unsigned int n = 0; n < lines; n++) {
-		if (n == 0) continue;
-		float offset = (float)n * step;
-		float maxDimension = (float)lines * step;
-		sf::Vertex line[] = 
-		{
-			getGridLineVertex(offset, maxDimension, true, isHorizontal),
-			getGridLineVertex(offset, maxDimension, false, isHorizontal)
-		};
-
-		renderTarget->draw(line, 2, sf::Lines);
-	}
-}
-
-static sf::Vertex getGridLineVertex(float offset, float maxDimension, bool isStart, bool isHorizontal)
-{
-	sf::Vertex start; 
-	sf::Vertex end; 
-
-	if (isHorizontal) {
-		start = sf::Vertex(sf::Vector2f(offset, 0));
-		end   = sf::Vertex(sf::Vector2f(offset, maxDimension));
-	}
-	else {
-		start = sf::Vertex(sf::Vector2f(0,            offset));
-		end   = sf::Vertex(sf::Vector2f(maxDimension, offset));
-	}
-
-	sf::Color color(100, 100, 100);
-	start.color = color;
-	end.color   = color;
-	return isStart? start : end;
+	return level[y * HEIGHT + x];
 }
 
 static float castRay(sf::Vector2f point, float direction)

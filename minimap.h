@@ -6,5 +6,6 @@
 
 int minimap_init(unsigned int size);
 void minimap_update(sf::RenderTarget* renderTarget, Camera* camera);
+void minimap_setTexturePosition(float x, float y);
 
 #endif

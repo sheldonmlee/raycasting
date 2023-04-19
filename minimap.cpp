@@ -3,28 +3,31 @@
 
 #include "maths.h"
 #include "level.h"
-
+// Camera drawing
 static void drawCamera(sf::RenderTarget* renderTarget, Camera* camera);
 static void drawRays(sf::RenderTarget* renderTarget, Camera* camera);
 static void drawLine(sf::RenderTarget* renderTarget, sf::Vector2f pos, float angle, float length, sf::Color color);
+// Grid drawing
+static void drawGrid(sf::RenderTarget* renderTarget, unsigned int tileSize);
+static void drawGridLine(sf::RenderTarget* renderTarget, float step, bool isHorizontal);
+static sf::Vertex getGridLineVertex(float n, float maxDimension, bool isStart, bool isHorizontal);
 
-static sf::RenderTexture minimap;
+static sf::RenderTexture renderTexture;
+static sf::Vector2f renderTexturePosition;
 
 static bool init = false;
 static unsigned int minimapSize;
+static unsigned int gridWidth, gridHeight;
 static float drawScale;
 
 int minimap_init(unsigned int size)
 {
 	printf("minimap_init()\n");
-	if (!minimap.create(size, size)) return 0;
-	level_init();
-
-	unsigned int width, height;
-	level_getDimensions(&width, &height);
+	if (!renderTexture.create(size, size)) return 0;
 
 	minimapSize = size;
-	drawScale = (float)size/(float)width;
+	level_getDimensions(&gridWidth, &gridHeight);
+	drawScale = (float)size/(float)gridWidth;
 
 	init = true;
 	return 1;
@@ -34,13 +37,20 @@ void minimap_update(sf::RenderTarget* renderTarget, Camera* camera)
 {
 	if (!init) return;
 	if (!renderTarget || !camera) return;
-	minimap.clear();
-	level_update(&minimap, minimapSize);
-	drawCamera(&minimap, camera);
-	minimap.display();
 
-	sf::Sprite sprite(minimap.getTexture());
+	renderTexture.clear();
+	drawGrid(&renderTexture, minimapSize/gridWidth);
+	drawCamera(&renderTexture, camera);
+	renderTexture.display();
+
+	sf::Sprite sprite(renderTexture.getTexture());
 	renderTarget->draw(sprite);
+}
+
+void minimap_setTexturePosition(float x, float y)
+{
+	renderTexturePosition.x = x;
+	renderTexturePosition.y = y;
 }
 
 static void drawCamera(sf::RenderTarget* renderTarget, Camera* camera)
@@ -61,24 +71,9 @@ static void drawRays(sf::RenderTarget* renderTarget, Camera* camera)
 {
 	const sf::Vector2f scaledPos = camera->pos * drawScale;
 
-	float rayDirection = 0;
-	float rayDirectionStep = camera->fov / (float)camera->resolution;
-	bool isOddResolution = (camera->resolution % 2);
-	float rayDirectionOffset = isOddResolution? 0 : rayDirectionStep / 2.f;
-
 	for (unsigned int i = 0; i < camera->resolution; i++) {
-		if (isOddResolution && i == 0) 
-			rayDirection = camera->direction;
-		else if (i % 2) 
-			rayDirection = camera->direction - rayDirectionOffset;
-		else 
-			rayDirection = camera->direction + rayDirectionOffset;
-
-		float distance = level_rayCastDistance(camera->pos, rayDirection) * drawScale;
-
-		drawLine(renderTarget, scaledPos, rayDirection, distance, sf::Color(150, 150, 100));
-
-		if ((i + isOddResolution) % 2) rayDirectionOffset += rayDirectionStep;
+		CameraRay* ray = &camera->rays[i];
+		drawLine(renderTarget, scaledPos, ray->direction, ray->distance * drawScale, sf::Color(150, 150, 100));
 	}
 }
 
@@ -98,3 +93,56 @@ static void drawLine(sf::RenderTarget* renderTarget, sf::Vector2f pos, float ang
 	renderTarget->draw(line, 2, sf::Lines);
 }
 
+static void drawGrid(sf::RenderTarget* renderTarget, unsigned int tileSize)
+{
+	for (unsigned int x = 0; x < gridWidth; x++) {
+		for (unsigned int y = 0; y < gridHeight; y++) {
+			if (!level_getGridValue(x, y)) continue;
+
+			sf::RectangleShape rectangle(sf::Vector2f(tileSize, tileSize));
+			rectangle.setPosition((float)x * tileSize, (float)y * tileSize);
+			renderTarget->draw(rectangle);
+		}
+	}
+
+	drawGridLine(renderTarget, tileSize, true);
+	drawGridLine(renderTarget, tileSize, false);
+}
+
+static void drawGridLine(sf::RenderTarget* renderTarget, float step, bool isHorizontal)
+{
+	unsigned int lines = isHorizontal? gridWidth : gridHeight;
+
+	for (unsigned int n = 0; n < lines; n++) {
+		if (n == 0) continue;
+		float offset = (float)n * step;
+		float maxDimension = (float)lines * step;
+		sf::Vertex line[] = 
+		{
+			getGridLineVertex(offset, maxDimension, true, isHorizontal),
+			getGridLineVertex(offset, maxDimension, false, isHorizontal)
+		};
+
+		renderTarget->draw(line, 2, sf::Lines);
+	}
+}
+
+static sf::Vertex getGridLineVertex(float offset, float maxDimension, bool isStart, bool isHorizontal)
+{
+	sf::Vertex start; 
+	sf::Vertex end; 
+
+	if (isHorizontal) {
+		start = sf::Vertex(sf::Vector2f(offset, 0));
+		end   = sf::Vertex(sf::Vector2f(offset, maxDimension));
+	}
+	else {
+		start = sf::Vertex(sf::Vector2f(0,            offset));
+		end   = sf::Vertex(sf::Vector2f(maxDimension, offset));
+	}
+
+	sf::Color color(100, 100, 100);
+	start.color = color;
+	end.color   = color;
+	return isStart? start : end;
+}

@@ -6,22 +6,24 @@
 #include "camera.h"
 #include "minimap.h"
 
-#define MINIMAP_SIZE 250
-#define HALF_MINIMAP_SIZE MINIMAP_SIZE/2.f
-#define DRAW_SCALE MINIMAP_SIZE/5.f
+#define MINIMAP_SIZE 460
+#define VIEW_SIZE MINIMAP_SIZE*2
 
 static int handleKeyCode(sf::Keyboard::Key key);
 
-static Camera camera = { sf::Vector2f(5.f/2.f, 5.f/2.f), 0.f, 300, 0.5f*PI };
+static Camera camera;
 
 static sf::Uint32 style = sf::Style::Titlebar;
-static sf::RenderWindow window(sf::VideoMode(MINIMAP_SIZE + camera.resolution, MINIMAP_SIZE), "Raycasting", style);
+static sf::RenderWindow window(sf::VideoMode(MINIMAP_SIZE + VIEW_SIZE, MINIMAP_SIZE), "Raycasting", style);
 static sf::Clock timer;
 
 int view_init()
 {
 	printf("view_init()\n");
-	minimap_init(MINIMAP_SIZE);
+	if (!camera_init(&camera, sf::Vector2f(5.f/2.f, 5.f/2.f), 0.f, 100, 0.5f*PI)) return 0;
+	if (!minimap_init(MINIMAP_SIZE)) return 0;
+
+	minimap_setTexturePosition(0.f, 0.f);
 	return 1;
 }
 
@@ -55,9 +57,9 @@ int view_update()
 
 void view_end()
 {
-	printf("view_end()\n");
-
+	camera_destroy(&camera);
 	window.close();
+	printf("view_end()\n");
 }
 
 static int handleKeyCode(sf::Keyboard::Key key)

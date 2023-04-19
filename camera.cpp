@@ -7,12 +7,24 @@
 #define TRANSLATIONAL_SPEED 1.f
 
 static void move(Camera* camera, float t);
+static void castRays(Camera* camera);
+
+int camera_init(Camera* camera, sf::Vector2f pos, float direction, unsigned int resolution, float fov)
+{
+	camera->pos = pos;
+	camera->direction = direction;
+	camera->resolution = resolution;
+	camera->fov = fov;
+
+	camera->rays = (CameraRay*)malloc(sizeof(CameraRay)*resolution);
+	return 1;
+}
 
 void camera_update(Camera* camera, float t)
 {
 	if (!camera) return; 
-
 	move(camera, t);
+	castRays(camera);
 }
 
 static void move(Camera* camera, float t)
@@ -29,8 +41,35 @@ static void move(Camera* camera, float t)
 		rotation -=1;
 
 	float magnitude = forward * t * TRANSLATIONAL_SPEED;
-	sf::Vector2f offset(magnitude * cos(camera->direction), magnitude *sin(camera->direction));
+	sf::Vector2f offset(magnitude * cos(camera->direction), magnitude * sin(camera->direction));
 
 	camera->pos += offset;
 	camera->direction += rotation * t * ROTATION_SPEED;
+}
+
+void camera_destroy(Camera *camera)
+{
+	free(camera->rays);
+}
+
+static void castRays(Camera* camera)
+{
+	float rayDirection = 0;
+	float rayDirectionStep = camera->fov / (float)camera->resolution;
+	bool isOddResolution = (camera->resolution % 2);
+	float rayDirectionOffset = isOddResolution? 0 : rayDirectionStep / 2.f;
+
+	for (unsigned int i = 0; i < camera->resolution; i++) {
+		if (isOddResolution && i == 0) 
+			rayDirection = camera->direction;
+		else if (i % 2) 
+			rayDirection = camera->direction - rayDirectionOffset;
+		else 
+			rayDirection = camera->direction + rayDirectionOffset;
+
+		camera->rays[i].direction = rayDirection;
+		camera->rays[i].distance = level_rayCastDistance(camera->pos, rayDirection);
+
+		if ((i + isOddResolution) % 2) rayDirectionOffset += rayDirectionStep;
+	}
 }
