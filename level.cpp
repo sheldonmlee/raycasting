@@ -2,18 +2,23 @@
 
 #include "maths.h"
 
-#define WIDTH  5
-#define HEIGHT 5
+#define WIDTH  10
+#define HEIGHT 10
 
 static float castRay(sf::Vector2f point, float direction);
 static void getGridIndex(sf::Vector2f point, int* x, int* y);
 
 static unsigned int level[WIDTH * HEIGHT] = {
-	0, 0, 1, 1, 1,
-	0, 0, 0, 0, 0,
-	1, 0, 1, 0, 1,
-	1, 0, 0, 0, 1,
-	1, 0, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 0, 0, 0, 0, 0, 1, 1,
+	1, 1, 1, 0, 0, 0, 0, 1, 0, 1,
+	1, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 1, 0, 0, 0, 1, 0, 1,
+	1, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 1, 0, 0, 0, 1, 0, 1,
+	1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+	1, 0, 0, 1, 0, 0, 0, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 };
 
 int level_init()
