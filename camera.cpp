@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <stdio.h>
 
 #include "maths.h"
 #include "level.h"
@@ -54,22 +55,12 @@ void camera_destroy(Camera *camera)
 
 static void castRays(Camera* camera)
 {
-	float rayDirection = 0;
 	float rayDirectionStep = camera->fov / (float)camera->resolution;
-	bool isOddResolution = (camera->resolution % 2);
-	float rayDirectionOffset = isOddResolution? 0 : rayDirectionStep / 2.f;
-
+	float rayDirection = camera->direction - camera->fov/2.f + rayDirectionStep/2.f;
 	for (unsigned int i = 0; i < camera->resolution; i++) {
-		if (isOddResolution && i == 0) 
-			rayDirection = camera->direction;
-		else if (i % 2) 
-			rayDirection = camera->direction - rayDirectionOffset;
-		else 
-			rayDirection = camera->direction + rayDirectionOffset;
-
 		camera->rays[i].direction = rayDirection;
 		camera->rays[i].distance = level_rayCastDistance(camera->pos, rayDirection);
 
-		if ((i + isOddResolution) % 2) rayDirectionOffset += rayDirectionStep;
+		rayDirection += rayDirectionStep;
 	}
 }
