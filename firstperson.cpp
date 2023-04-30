@@ -39,9 +39,34 @@ void firstperson_update(sf::RenderTarget* renderTarget, Camera* camera)
 		distanceScale = (distanceScale > 1.f)? 1.f : distanceScale;
 		float brightness = 255.f*(1.f-distanceScale);
 
+		switch (camera->rays[i].tileData.side) {
+			case NORTH:
+				break;
+			case EAST:
+			case WEST:
+				brightness *= 0.9;
+				break;
+			case SOUTH:
+				brightness *= 0.8;
+				break;
+		}
+
+		sf::Color color(brightness, brightness, brightness);
+		switch (camera->rays[i].tileData.value) {
+			case 2:
+				color *= sf::Color::Red; 
+				break;
+			case 3:
+				color *= sf::Color::Green;
+				break;
+			case 4:
+				color *= sf::Color::Blue;
+				break;
+		};
+
 		sf::RectangleShape rectangle(sf::Vector2f(columnWidth, columnHeight));
 		rectangle.setPosition(sf::Vector2f(i*columnWidth, centeredHeight));
-		rectangle.setFillColor(sf::Color(brightness, brightness, brightness));
+		rectangle.setFillColor(color);
 		renderTexture.draw(rectangle);
 	}
 

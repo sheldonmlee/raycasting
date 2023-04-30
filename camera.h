@@ -2,11 +2,13 @@
 #define CAMERA_H
 
 #include <SFML/Graphics.hpp>
+#include "level.h"
 
 typedef struct
 {
 	float direction;
 	float distance;
+	TileData tileData;
 } CameraRay;
 
 typedef struct

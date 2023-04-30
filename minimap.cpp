@@ -97,10 +97,25 @@ static void drawGrid(sf::RenderTarget* renderTarget, unsigned int tileSize)
 {
 	for (unsigned int x = 0; x < gridWidth; x++) {
 		for (unsigned int y = 0; y < gridHeight; y++) {
-			if (!level_getGridValue(x, y)) continue;
+			unsigned int value = level_getGridValue(x, y);
+			if (!value) continue;
+
+			sf::Color color(255, 255, 255);
+			switch (value) {
+				case 2:
+					color = sf::Color::Red;
+					break;
+				case 3:
+					color = sf::Color::Green;
+					break;
+				case 4:
+					color = sf::Color::Blue;
+					break;
+			};
 
 			sf::RectangleShape rectangle(sf::Vector2f(tileSize, tileSize));
 			rectangle.setPosition((float)x * tileSize, (float)y * tileSize);
+			rectangle.setFillColor(color);
 			renderTarget->draw(rectangle);
 		}
 	}

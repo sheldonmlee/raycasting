@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "maths.h"
-#include "level.h"
 
 #define ROTATION_SPEED PI
 #define TRANSLATIONAL_SPEED 1.f
@@ -59,7 +58,7 @@ static void castRays(Camera* camera)
 	float rayDirection = camera->direction - camera->fov/2.f + rayDirectionStep/2.f;
 	for (unsigned int i = 0; i < camera->resolution; i++) {
 		camera->rays[i].direction = rayDirection;
-		camera->rays[i].distance = level_rayCastDistance(camera->pos, rayDirection);
+		camera->rays[i].distance = level_rayCast(camera->pos, rayDirection, &camera->rays[i].tileData);
 
 		rayDirection += rayDirectionStep;
 	}

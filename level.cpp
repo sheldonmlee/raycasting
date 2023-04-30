@@ -5,17 +5,17 @@
 #define WIDTH  10
 #define HEIGHT 10
 
-static float castRay(sf::Vector2f point, float direction);
+static float castRay(sf::Vector2f point, float direction, TileData* tileData);
 static void getGridIndex(sf::Vector2f point, int* x, int* y);
 
 static unsigned int level[WIDTH * HEIGHT] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 0, 0, 0, 0, 0, 1, 1,
-	1, 1, 1, 0, 0, 0, 0, 1, 0, 1,
+	1, 1, 1, 0, 0, 0, 0, 2, 0, 1,
 	1, 0, 0, 1, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 1, 0, 0, 0, 1, 0, 1,
+	1, 0, 0, 1, 0, 0, 0, 3, 0, 1,
 	1, 0, 0, 1, 0, 0, 0, 0, 0, 1,
-	1, 0, 0, 1, 0, 0, 0, 1, 0, 1,
+	1, 0, 0, 1, 0, 0, 0, 4, 0, 1,
 	1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 	1, 0, 0, 1, 0, 0, 0, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -36,9 +36,10 @@ void level_end()
 	return;
 }
 
-float level_rayCastDistance(sf::Vector2f point, float direction)
+float level_rayCast(sf::Vector2f point, float direction, TileData* tileData)
 {
-	return castRay(point, direction);
+	if (!tileData) return -1.f;
+	return castRay(point, direction, tileData);
 }
 
 void level_getDimensions(unsigned int* width, unsigned int* height)
@@ -55,7 +56,7 @@ unsigned int level_getGridValue(unsigned int x, unsigned int y)
 	return level[y * HEIGHT + x];
 }
 
-static float castRay(sf::Vector2f point, float direction)
+static float castRay(sf::Vector2f point, float direction, TileData* tileData)
 {
 	int indexX, indexY;
 	getGridIndex(point, &indexX, &indexY);
@@ -125,7 +126,12 @@ static float castRay(sf::Vector2f point, float direction)
 		if (!(inLevel0 || inLevel1)) break; 
 
 		if (horizontalRayDist < verticalRayDist) {
-			if (level[indexY0 * WIDTH + indexX0]) return horizontalRayDist;
+			unsigned int gridValue = level[indexY0 * WIDTH + indexX0];
+			if (gridValue) {
+				tileData->value = gridValue;
+				tileData->side = goingDown? NORTH : SOUTH;
+				return horizontalRayDist;
+			}
 
 			horizontalProjectedX += horizontalStepX;
 			horizontalProjectedY += horizontalStepY;
@@ -133,7 +139,12 @@ static float castRay(sf::Vector2f point, float direction)
 			horizontalRayDist += std::abs(horizontalStepY/horizontalDistCoeff);
 		}
 		else {
-			if (level[indexY1 * WIDTH + indexX1]) return verticalRayDist;
+			unsigned int gridValue = level[indexY1 * WIDTH + indexX1];
+			if (gridValue) {
+				tileData->value = gridValue;
+				tileData->side = goingRight? WEST : EAST;
+				return verticalRayDist;
+			}
 
 			verticalProjectedX += verticalStepX;
 			verticalProjectedY += verticalStepY;
