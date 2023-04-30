@@ -27,8 +27,12 @@ void firstperson_update(sf::RenderTarget* renderTarget, Camera* camera)
 	renderTexture.clear();
 
 	for (unsigned int i = 0; i < camera->resolution; i++) {
-		float distance = camera->rays[i].distance;
-		if (distance > 0.f) columnHeight = 0.5f * (float)height/camera->rays[i].distance;
+		// Get distance of ray intersection in the direction of the camera,
+		// instead of the actual ray distance to avoid fish eye effect.
+		float angleDiff = camera->rays[i].direction - camera->direction;
+		float distance = camera->rays[i].distance * cos(angleDiff);
+
+		if (distance > 0.f) columnHeight = 0.5f * (float)height/distance;
 
 		float centeredHeight = (float)height/2.f - columnHeight/2.f;
 		float distanceScale = distance/10.f;
