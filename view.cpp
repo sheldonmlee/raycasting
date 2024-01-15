@@ -7,7 +7,7 @@
 #include "minimap.h"
 #include "firstperson.h"
 
-#define MINIMAP_SIZE 480
+#define MINIMAP_SIZE 512
 #define VIEW_SIZE MINIMAP_SIZE*2
 
 static int handleKeyCode(sf::Keyboard::Key key);
@@ -21,12 +21,13 @@ static sf::Clock timer;
 int view_init()
 {
 	printf("view_init()\n");
-	if (!camera_init(&camera, sf::Vector2f(10.f/2.f, 10.f/2.f), 0.f, 2<<7, 0.5f*PI)) return 0;
+	if (!camera_init(&camera, sf::Vector2f(10.f/2.f, 10.f/2.f), 0.f, VIEW_SIZE, 0.5f*PI)) return 0;
 	if (!minimap_init(MINIMAP_SIZE)) return 0;
 	if (!firstperson_init(VIEW_SIZE, MINIMAP_SIZE)) return 0;
 
 	minimap_setTexturePosition(0.f, 0.f);
 	firstperson_setTexturePosition(MINIMAP_SIZE, 0.f);
+
 	return 1;
 }
 
@@ -54,6 +55,7 @@ int view_update()
 	window.clear();
 	minimap_update(&window, &camera);
 	firstperson_update(&window, &camera);
+
 	window.display();
 
 	return 1;
